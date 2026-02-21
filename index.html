@@ -11,7 +11,7 @@
             margin: 0; padding: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at center, #1b2735 0%, #05070a 100%);
             color: white; font-family: 'Poppins', sans-serif; overflow: hidden;
-            touch-action: manipulation; /* Mobildə zoom-un qarşısını almaq üçün */
+            touch-action: manipulation;
         }
 
         canvas { display: block; position: absolute; top: 0; left: 0; z-index: 1; }
@@ -87,32 +87,26 @@
             line-height: 1.3; margin-bottom: 25px; min-height: 80px;
         }
 
-        /* Sual və Düymələr */
+        /* Düymələrin Ayrılması */
         .question-box {
-            display: none; flex-direction: column; align-items: center; gap: 15px; width: 100%;
+            display: none; flex-direction: column; align-items: center; gap: 20px; width: 100%;
         }
 
-        .btn-group { 
-            position: relative; 
-            width: 100%; 
-            height: 150px; /* Qaçmaq üçün sahə */
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
+        .btn-yes {
+            background: transparent; border: 2px solid #ffd700; color: #ffd700;
+            padding: 12px 50px; border-radius: 50px; cursor: pointer;
+            letter-spacing: 2px; font-weight: 600; font-family: 'Poppins', sans-serif;
+            transition: 0.3s; z-index: 1002;
         }
-
-        .btn {
-            background: transparent; border: 1.5px solid #ffd700; color: #ffd700;
-            padding: 12px 35px; border-radius: 50px; cursor: pointer;
-            letter-spacing: 1.5px; font-weight: 600; transition: 0.2s;
-            font-family: 'Poppins', sans-serif;
-            z-index: 1001;
-        }
-
-        .btn-yes { position: relative; z-index: 1002; }
         .btn-yes:hover, .btn-yes:active { background: #ffd700; color: #000; box-shadow: 0 0 20px #ffd700; }
         
-        #btn-no { position: absolute; transition: all 0.2s ease; }
+        #btn-no { 
+            background: transparent; border: 1.5px solid #4a4e69; color: #4a4e69;
+            padding: 8px 25px; border-radius: 50px; cursor: pointer;
+            font-family: 'Poppins', sans-serif; font-size: 13px;
+            position: relative; margin-top: 30px; transition: all 0.2s ease;
+            z-index: 1001; 
+        }
 
         .music-btn {
             position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
@@ -146,11 +140,9 @@
         <div id="typewriter" class="letter-text"></div>
         
         <div id="question-area" class="question-box">
-            <h3 style="color: white; margin-bottom: 5px; font-size: 1.2rem;">Geri dönürsən? 🥺</h3>
-            <div class="btn-group" id="btn-container">
-                <button class="btn btn-yes" onclick="goToWhatsapp()">HƏ</button>
-                <button class="btn" id="btn-no">YOX</button>
-            </div>
+            <h3 style="color: white; margin-bottom: 10px; font-size: 1.2rem;">Geri dönürsən? 🥺</h3>
+            <button class="btn-yes" onclick="goToWhatsapp()">HƏ</button>
+            <button id="btn-no">YOX</button>
         </div>
     </div>
 
@@ -246,26 +238,27 @@
             }
         });
 
-        // "YOX" düyməsinin qaçma məntiqi (Həm Mobil həm PC)
+        // "YOX" düyməsinin qaçma məntiqi
         const btnNo = document.getElementById('btn-no');
         
         function moveNoButton(e) {
-            e.preventDefault(); // Klikləməyin qarşısını alır
-            const container = document.getElementById('btn-container');
-            const maxX = window.innerWidth - btnNo.offsetWidth;
-            const maxY = window.innerHeight - btnNo.offsetHeight;
+            e.preventDefault();
+            // Düymənin qaçacağı sahəni genişləndiririk (fixed ilə bütün ekran)
+            const maxX = window.innerWidth - btnNo.offsetWidth - 20;
+            const maxY = window.innerHeight - btnNo.offsetHeight - 20;
             
-            const randomX = Math.random() * maxX;
-            const randomY = Math.random() * maxY;
+            const randomX = Math.max(10, Math.random() * maxX);
+            const randomY = Math.max(10, Math.random() * maxY);
             
             btnNo.style.position = 'fixed';
             btnNo.style.left = randomX + 'px';
             btnNo.style.top = randomY + 'px';
+            btnNo.style.margin = '0'; // Margin-i sıfırlayırıq ki, sürüşməsin
         }
 
-        btnNo.addEventListener('mouseover', moveNoButton); // PC üçün
-        btnNo.addEventListener('touchstart', moveNoButton); // Mobil toxunuş üçün
-        btnNo.addEventListener('click', (e) => { e.preventDefault(); moveNoButton(e); }); // Hər ehtimala qarşı klik üçün
+        btnNo.addEventListener('mouseover', moveNoButton);
+        btnNo.addEventListener('touchstart', moveNoButton);
+        btnNo.addEventListener('click', (e) => { e.preventDefault(); moveNoButton(e); });
 
         function goToWhatsapp() {
             window.location.href = "https://wa.me/994517340489?text=Hə, qayıdıram... ❤️";
