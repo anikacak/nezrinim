@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nəzrin üçün Göy Üzü</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Dancing+Script:wght@700&display=swap');
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #1b2735 0%, #05070a 100%);
+            color: white; font-family: 'Poppins', sans-serif; overflow: hidden;
+            touch-action: manipulation; /* Mobildə zoom-un qarşısını almaq üçün */
+        }
+
+        canvas { display: block; position: absolute; top: 0; left: 0; z-index: 1; }
+
+        /* Canlı Sayğac */
+        #timer-container {
+            position: absolute; top: 20px; left: 20px;
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(10px);
+            padding: 10px 20px; border-radius: 15px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            z-index: 100;
+        }
+
+        .timer-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: #ffd700; display: block; }
+        .timer-digits { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+        /* Üst Ulduzlar */
+        .header-stars {
+            position: absolute; top: 20px; right: 20px;
+            display: flex; gap: 20px; z-index: 100;
+        }
+
+        .star-item { text-align: center; cursor: pointer; transition: 0.4s; }
+        .star-main { font-size: 30px; color: #ffd700; filter: drop-shadow(0 0 10px #ffd700); animation: pulse 2s infinite alternate; }
+        .star-dim { font-size: 18px; color: #4a4e69; opacity: 0.6; }
+
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.2); } }
+
+        /* İşarə Mesajı */
+        #click-hint {
+            position: absolute; bottom: 120px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 100; font-size: 12px; color: #ffd700;
+            background: rgba(0,0,0,0.5); padding: 8px 16px;
+            border-radius: 30px; animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translate(-50%, 0); opacity: 0.5; }
+            50% { transform: translate(-50%, -10px); opacity: 1; }
+        }
+
+        /* Mesaj Qutusu */
+        #popup-message {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(15px);
+            padding: 25px; border-radius: 20px; border: 1px solid #ffd700;
+            text-align: center; display: none; z-index: 200;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+            width: 80%; max-width: 300px;
+        }
+
+        /* Final Paneli */
+        #final-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.98); display: none;
+            flex-direction: column; justify-content: center; align-items: center;
+            z-index: 1000; text-align: center; padding: 20px; box-sizing: border-box;
+        }
+
+        .photo-frame {
+            width: 150px; height: 150px; border-radius: 50%;
+            border: 3px solid #ffd700; padding: 5px;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.4);
+            object-fit: cover; margin-bottom: 15px;
+        }
+
+        .letter-text {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.4rem; color: #ffd700; max-width: 90%;
+            line-height: 1.3; margin-bottom: 25px; min-height: 80px;
+        }
+
+        /* Sual və Düymələr */
+        .question-box {
+            display: none; flex-direction: column; align-items: center; gap: 15px; width: 100%;
+        }
+
+        .btn-group { 
+            position: relative; 
+            width: 100%; 
+            height: 150px; /* Qaçmaq üçün sahə */
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+
+        .btn {
+            background: transparent; border: 1.5px solid #ffd700; color: #ffd700;
+            padding: 12px 35px; border-radius: 50px; cursor: pointer;
+            letter-spacing: 1.5px; font-weight: 600; transition: 0.2s;
+            font-family: 'Poppins', sans-serif;
+            z-index: 1001;
+        }
+
+        .btn-yes { position: relative; z-index: 1002; }
+        .btn-yes:hover, .btn-yes:active { background: #ffd700; color: #000; box-shadow: 0 0 20px #ffd700; }
+        
+        #btn-no { position: absolute; transition: all 0.2s ease; }
+
+        .music-btn {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: transparent; border: 1px solid #ffd700; color: #ffd700;
+            padding: 10px 25px; border-radius: 50px; cursor: pointer;
+            z-index: 100; font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="timer-container">
+        <span class="timer-label">Birlikdə:</span>
+        <div class="timer-digits" id="timer">...</div>
+    </div>
+
+    <div class="header-stars">
+        <div class="star-item" onclick="alert('Bu SƏNSƏN Nezrin! ✨')">
+            <span class="star-main">★</span>
+        </div>
+        <div class="star-item" onclick="alert('Bu da mənəm... ☁️')">
+            <span class="star-dim">★</span>
+        </div>
+    </div>
+
+    <div id="click-hint">Səmandakı ulduzlara toxun... ✨</div>
+    <div id="popup-message"></div>
+
+    <div id="final-screen">
+        <img src="nezrin.jpg" alt="Nezrin" class="photo-frame">
+        <div id="typewriter" class="letter-text"></div>
+        
+        <div id="question-area" class="question-box">
+            <h3 style="color: white; margin-bottom: 5px; font-size: 1.2rem;">Geri dönürsən? 🥺</h3>
+            <div class="btn-group" id="btn-container">
+                <button class="btn btn-yes" onclick="goToWhatsapp()">HƏ</button>
+                <button class="btn" id="btn-no">YOX</button>
+            </div>
+        </div>
+    </div>
+
+    <button class="music-btn" onclick="toggleMusic()">SƏNƏ ÖZƏL ✨</button>
+    <audio id="bgMusic" loop><source src="Bənd 1_.mp3" type="audio/mpeg"></audio>
+    <canvas id="sky"></canvas>
+
+    <script>
+        const canvas = document.getElementById('sky');
+        const ctx = canvas.getContext('2d');
+        const music = document.getElementById('bgMusic');
+        let stars = [];
+        let clickCount = 0;
+
+        // Sayğac (11.02.2026)
+        const chatStart = new Date(2026, 1, 11, 0, 0, 0); 
+        function updateTimer() {
+            const now = new Date();
+            const diff = now - chatStart;
+            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const m = Math.floor((diff / (1000 * 60)) % 60);
+            const s = Math.floor((diff / 1000) % 60);
+            document.getElementById('timer').innerText = `${d}g ${h}s ${m}d ${s}sn`;
+        }
+        setInterval(updateTimer, 1000);
+
+        // Ulduzlar
+        function init() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            for(let i=0; i<120; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 1.5 + 1,
+                    speed: Math.random() * 0.3 + 0.1,
+                    o: Math.random() * 0.8 + 0.2
+                });
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            stars.forEach(s => {
+                ctx.fillStyle = `rgba(255, 255, 255, ${s.o})`;
+                ctx.beginPath(); ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2); ctx.fill();
+                ctx.font = "9px Poppins";
+                ctx.fillStyle = `rgba(255, 215, 0, ${s.o * 0.4})`;
+                ctx.fillText("Nezrin", s.x + 8, s.y + 4);
+                s.y += s.speed;
+                if(s.y > canvas.height) s.y = -10;
+            });
+            requestAnimationFrame(draw);
+        }
+
+        // Məktub
+        const message = "Nəzrin, sən mənim səmamın ən parlaq ulduzusan... sənsiz hər şey qaranlıqdır. Qayıt, barisaq, yeniden heyatimizi isiqlandiraq. ❤️";
+        function startTypewriter() {
+            let i = 0;
+            const target = document.getElementById('typewriter');
+            function type() {
+                if (i < message.length) {
+                    target.innerHTML += message.charAt(i); i++;
+                    setTimeout(type, 50);
+                } else { document.getElementById('question-area').style.display = 'flex'; }
+            }
+            type();
+        }
+
+        const reasons = [
+            "Bu ulduz sənin gözlərinə görə parlayır ✨",
+            "Bu ulduz sənin gülüşünə görə buradadır 🌸",
+            "bu ulduz sənin varlığın üçün yanır... 🌟",
+            "Nəzrin, sən mənim ən böyük 'yaxşı ki'imsən.",
+            "Bu səmanın tək bir sahibi var, o da Sənsən.",
+            "Hər döyüntü sənin adını pıçıldayır..."
+        ];
+
+        canvas.addEventListener('click', () => {
+            document.getElementById('click-hint').style.display = 'none';
+            if(clickCount < reasons.length) {
+                const box = document.getElementById('popup-message');
+                box.innerText = reasons[clickCount];
+                box.style.display = 'block';
+                setTimeout(() => { 
+                    box.style.display = 'none'; clickCount++;
+                    if(clickCount === reasons.length) {
+                        document.getElementById('final-screen').style.display = 'flex';
+                        startTypewriter();
+                    }
+                }, 2200);
+            }
+        });
+
+        // "YOX" düyməsinin qaçma məntiqi (Həm Mobil həm PC)
+        const btnNo = document.getElementById('btn-no');
+        
+        function moveNoButton(e) {
+            e.preventDefault(); // Klikləməyin qarşısını alır
+            const container = document.getElementById('btn-container');
+            const maxX = window.innerWidth - btnNo.offsetWidth;
+            const maxY = window.innerHeight - btnNo.offsetHeight;
+            
+            const randomX = Math.random() * maxX;
+            const randomY = Math.random() * maxY;
+            
+            btnNo.style.position = 'fixed';
+            btnNo.style.left = randomX + 'px';
+            btnNo.style.top = randomY + 'px';
+        }
+
+        btnNo.addEventListener('mouseover', moveNoButton); // PC üçün
+        btnNo.addEventListener('touchstart', moveNoButton); // Mobil toxunuş üçün
+        btnNo.addEventListener('click', (e) => { e.preventDefault(); moveNoButton(e); }); // Hər ehtimala qarşı klik üçün
+
+        function goToWhatsapp() {
+            window.location.href = "https://wa.me/994517340489?text=Hə, qayıdıram... ❤️";
+        }
+
+        function toggleMusic() { music.paused ? music.play() : music.pause(); }
+        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+        init(); draw();
+    </script>
+</body>
+</html>
